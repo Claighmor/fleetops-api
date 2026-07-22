@@ -1,0 +1,16 @@
+<Pill
+    @resource={{this.resource}}
+    @imageSrc={{avatar-url this.resource.photo_url}}
+    @titleFallback={{or @titleFallback "No driver"}}
+    @subtitle={{n-a this.resource.phone (if this.resource "No phone" "-")}}
+    @fallbackImageType="driverImage"
+    @showOnlineIndicator={{if this.resource true false}}
+    @onClick={{@onClick}}
+    @anchorClass={{@anchorClass}}
+    @imageClass={{@imageClass}}
+    @imageWrapperClass={{@imageWrapperClass}}
+    @contentWrapperClass={{@contentWrapperClass}}
+    @titleClass={{@titleClass}}
+    @subtitleClass={{@subtitleClass}}
+    ...attributes
+/>

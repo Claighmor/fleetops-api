@@ -1,0 +1,175 @@
+<div class="issue-detail-surface" ...attributes>
+    <section class="issue-detail-summary-card">
+        <div class="issue-detail-section-header">
+            <div>
+                <div class="issue-detail-section-title">Issue Details</div>
+                <p>Classification, ownership, and reporting date.</p>
+            </div>
+        </div>
+        <dl class="issue-detail-summary-grid">
+            <div class="issue-detail-summary-item">
+                <dt>Type</dt>
+                <dd>{{n-a (smart-humanize @resource.type)}}</dd>
+            </div>
+            <div class="issue-detail-summary-item">
+                <dt>Category</dt>
+                <dd>{{n-a (smart-humanize @resource.category)}}</dd>
+            </div>
+            <div class="issue-detail-summary-item">
+                <dt>Reporter</dt>
+                <dd><User::Pill @user={{@resource.reporter}} @titleFallback={{this.reporterName}} /></dd>
+            </div>
+            <div class="issue-detail-summary-item">
+                <dt>Assignee</dt>
+                <dd><User::Pill @user={{@resource.assignee}} @titleFallback={{this.assigneeName}} /></dd>
+            </div>
+            <div class="issue-detail-summary-item">
+                <dt>Date Reported</dt>
+                <dd>{{n-a @resource.createdAt}}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <div class="issue-detail-grid">
+        <main class="issue-detail-main">
+            <article class="issue-detail-message issue-detail-message-original">
+                <div class="issue-detail-avatar">{{this.reporterInitial}}</div>
+                <div class="issue-detail-message-content">
+                    <div class="issue-detail-message-meta">
+                        <div>
+                            <div class="issue-detail-message-author">{{this.reporterName}}</div>
+                            <div class="issue-detail-message-subtitle">Original report</div>
+                        </div>
+                        <time>{{n-a @resource.createdAt}}</time>
+                    </div>
+                    <div class="issue-detail-report">{{n-a @resource.report "No report was provided."}}</div>
+
+                    <Issue::Details::Documents @resource={{@resource}} />
+                </div>
+            </article>
+
+            <section class="issue-detail-correspondence">
+                <div class="issue-detail-section-header">
+                    <div>
+                        <div class="issue-detail-section-title">Correspondence</div>
+                        <p>Keep operator updates, customer replies, and internal follow-up attached to this issue.</p>
+                    </div>
+                </div>
+                <Issue::Details::Correspondence @resource={{@resource}} />
+            </section>
+
+            <section class="issue-detail-side-card">
+                <div class="issue-detail-section-title">Timeline</div>
+                <Issue::Timeline @resource={{@resource}} />
+            </section>
+
+            <RegistryYield @registry="fleet-ops:component:issue:details" as |RegistryComponent|>
+                <RegistryComponent @resource={{@resource}} />
+            </RegistryYield>
+        </main>
+
+        <aside class="issue-detail-side-rail">
+            <section class="issue-detail-side-card issue-detail-resolution-card">
+                <div class="issue-detail-section-title">Resolution Details</div>
+                <div class="issue-detail-resolution-state {{if this.isResolved 'is-resolved'}} {{if this.isReopened 'is-reopened'}}">
+                    <div class="issue-detail-resolution-icon">
+                        <FaIcon @icon={{this.resolutionIcon}} />
+                    </div>
+                    <div>
+                        <div class="issue-detail-resolution-title">{{this.resolutionTitle}}</div>
+                        <p>{{this.resolutionDescription}}</p>
+                    </div>
+                </div>
+                <dl class="issue-detail-meta-list">
+                    {{#if this.resolutionDate}}
+                        <div>
+                            <dt>{{if this.isReopened "Previous close date" "Closed date"}}</dt>
+                            <dd>{{this.resolutionDate}}</dd>
+                        </div>
+                    {{/if}}
+                    {{#if this.resolutionActor}}
+                        <div>
+                            <dt>{{if this.isReopened "Previously closed by" "Closed by"}}</dt>
+                            <dd>{{this.resolutionActor}}</dd>
+                        </div>
+                    {{/if}}
+                    {{#if this.resolutionNote}}
+                        <div>
+                            <dt>Note</dt>
+                            <dd>{{this.resolutionNote}}</dd>
+                        </div>
+                    {{/if}}
+                    {{#if this.timeToResolve}}
+                        <div>
+                            <dt>Time to resolve</dt>
+                            <dd>{{this.timeToResolve}}</dd>
+                        </div>
+                    {{/if}}
+                    <div>
+                        <dt>Status</dt>
+                        <dd><Badge @status={{@resource.status}} /></dd>
+                    </div>
+                    <div>
+                        <dt>Priority</dt>
+                        <dd><Badge @status={{@resource.priority}} /></dd>
+                    </div>
+                    <div>
+                        <dt>Type</dt>
+                        <dd>{{n-a (smart-humanize @resource.type)}}</dd>
+                    </div>
+                    <div>
+                        <dt>Category</dt>
+                        <dd>{{n-a (smart-humanize @resource.category)}}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="issue-detail-side-card">
+                <div class="issue-detail-section-title">Linked Resources</div>
+                <div class="issue-detail-resource-stack">
+                    <div class="issue-detail-resource-row">
+                        <div class="issue-detail-resource-label">Vehicle</div>
+                        <Vehicle::Pill @vehicle={{@resource.vehicle}} @titleFallback={{n-a @resource.vehicle_name "No vehicle linked"}} @onClick={{this.viewVehicle}} />
+                    </div>
+                    <div class="issue-detail-resource-row">
+                        <div class="issue-detail-resource-label">Driver</div>
+                        <Driver::Pill @driver={{@resource.driver}} @titleFallback={{n-a @resource.driver_name "No driver linked"}} @onClick={{this.viewDriver}} />
+                    </div>
+                </div>
+            </section>
+
+            <section class="issue-detail-side-card">
+                <div class="issue-detail-section-title">{{t "order.card.linked-order"}}</div>
+                {{#if this.order}}
+                    <Order::Card @order={{this.order}} @variant="default" @interactive={{true}} @onClick={{this.viewOrder}} />
+                {{else}}
+                    <div class="issue-detail-empty">
+                        <FaIcon @icon="route" />
+                        <span>{{t "order.card.no-order-linked"}}</span>
+                    </div>
+                {{/if}}
+            </section>
+
+            {{#if this.tags.length}}
+                <section class="issue-detail-side-card">
+                    <div class="issue-detail-section-title">Tags</div>
+                    <div class="issue-detail-tags">
+                        {{#each this.tags as |tag|}}
+                            <Badge @status="info" @text={{tag}} @hideStatusDot={{true}} />
+                        {{/each}}
+                    </div>
+                </section>
+            {{/if}}
+
+            {{#if this.hasLocation}}
+                <section class="issue-detail-side-card">
+                    <div class="issue-detail-section-title">Location</div>
+                    <div class="issue-detail-coordinate">{{point-coordinates @resource.location}}</div>
+                </section>
+            {{/if}}
+
+            <CustomField::Yield @subject={{@resource}} @viewMode={{true}} @wrapperClass="issue-detail-custom-fields" />
+        </aside>
+    </div>
+    <Spacer @height="200px" />
+</div>
