@@ -19,6 +19,13 @@ class MultiPolygon implements CastsAttributes
      */
     public function get($model, $key, $value, $attributes)
     {
+        if (is_string($value) && $value !== '' && ctype_xdigit($value) && strlen($value) >= 18) {
+            $geometry = Utils::pgHexToGeometry($value);
+            if ($geometry !== null) {
+                return $geometry;
+            }
+        }
+
         return $value;
     }
 

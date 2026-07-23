@@ -19,6 +19,14 @@ class Polygon implements CastsAttributes
      */
     public function get($model, $key, $value, $attributes)
     {
+        // PostGIS returns geometry as hex EWKB; convert to a Geometry object.
+        if (is_string($value) && $value !== '' && ctype_xdigit($value) && strlen($value) >= 18) {
+            $geometry = Utils::pgHexToGeometry($value);
+            if ($geometry !== null) {
+                return $geometry;
+            }
+        }
+
         return $value;
     }
 

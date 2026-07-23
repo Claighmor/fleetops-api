@@ -766,6 +766,57 @@ class Utils extends FleetbaseUtils
     }
 
     /**
+     * Parse a PostGIS hex EWKB string into a laravel-mysql-spatial Geometry object.
+     *
+     * PostGIS returns geometry columns as hex EWKB (with an SRID prefix). We use the
+     * geos extension to read it and re-emit plain WKB, which the package's GeoIO
+     * parser (Geometry::fromWKB) accepts for any geometry type (polygon, etc.).
+     */
+    public static function pgHexToGeometry(string $hex)
+    {
+        if (!class_exists('\GEOSWKBReader') || !class_exists('\GEOSWKTWriter')) {
+            return null;
+        }
+
+        try {
+            $reader   = new \GEOSWKBReader();
+            $geometry = $reader->readHEX($hex);
+
+            $writer = new \GEOSWKTWriter();
+            if (method_exists($writer, 'setTrim')) {
+                $writer->setTrim(true);
+            }
+            if (method_exists($writer, 'setOutputDimension')) {
+                $writer->setOutputDimension(2);
+            }
+            $wkt = $writer->write($geometry);
+
+            $ns  = 'Fleetbase\\LaravelMysqlSpatial\\Types\\';
+            $map = [
+                'MULTIPOLYGON'       => 'MultiPolygon',
+                'MULTILINESTRING'    => 'MultiLineString',
+                'MULTIPOINT'         => 'MultiPoint',
+                'GEOMETRYCOLLECTION' => 'GeometryCollection',
+                'POLYGON'            => 'Polygon',
+                'LINESTRING'         => 'LineString',
+                'POINT'              => 'Point',
+            ];
+            $upper = strtoupper(ltrim($wkt));
+            foreach ($map as $prefix => $class) {
+                if (strpos($upper, $prefix) === 0) {
+                    $fqcn = $ns . $class;
+
+                    return $fqcn::fromWKT($wkt);
+                }
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
      * Calculates the driving distance and time between two points.
      *
      * This function attempts to find the driving distance and time from the origin to the destination
