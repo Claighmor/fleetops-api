@@ -24,6 +24,7 @@
         "barryvdh/laravel-dompdf": "^2.0",
         "brick/geo": "0.7.2",
         "cknow/laravel-money": "^7.1",
+        "clickbar/laravel-magellan": "^1.9",
         "fleetbase/core-api": "*",
         "geocoder-php/google-maps-places-provider": "^1.4",
         "giggsey/libphonenumber-for-php": "^8.13",
