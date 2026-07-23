@@ -238,6 +238,12 @@ return new class extends Migration {
      */
     private function indexExists(string $table, string $indexName): bool
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $indexes = DB::select('SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexname = ?', [$table, $indexName]);
+
+            return count($indexes) > 0;
+        }
+
         $indexes = DB::select("SHOW INDEX FROM {$table} WHERE Key_name = ?", [$indexName]);
 
         return count($indexes) > 0;

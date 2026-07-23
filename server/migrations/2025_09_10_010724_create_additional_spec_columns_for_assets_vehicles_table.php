@@ -2,9 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    public $withinTransaction = false;
     /**
      * Run the migrations.
      */
@@ -23,9 +25,13 @@ return new class extends Migration {
             $table->mediumText('notes')->after('meta')->nullable();
             $table->string('usage_type')->after('type')->nullable();
             $table->string('measurement_system')->after('type')->nullable();
-            $table->json('vin_data')->change();
             $table->renameColumn('model_data', 'specs');
         });
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE vehicles ALTER COLUMN vin_data TYPE json USING NULLIF(vin_data, '')::json");
+        } else {
+            Schema::table('vehicles', fn (Blueprint $t) => $t->json('vin_data')->change());
+        }
 
         Schema::table('assets', function (Blueprint $table) {
             $table->string('ownership_type')->after('type')->nullable();
@@ -70,7 +76,11 @@ return new class extends Migration {
             $table->dropColumn('usage_type');
             $table->dropColumn('measurement_system');
             $table->dropColumn('ownership_type');
-            $table->mediumText('vin_data')->change();
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                DB::statement('ALTER TABLE vehicles ALTER COLUMN vin_data TYPE text USING vin_data::text');
+            } else {
+                $table->mediumText('vin_data')->change();
+            }
             $table->renameColumn('specs', 'model_data');
         });
     }

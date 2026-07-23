@@ -20,7 +20,7 @@ return new class extends Migration {
         // create events table
         Schema::create('vehicle_device_events', function (Blueprint $table) {
             $table->increments('id');
-            $table->uuid('uuid')->nullable();
+            $table->uuid('uuid')->nullable()->unique();
             $table->uuid('vehicle_device_uuid');
             $table->foreign('vehicle_device_uuid')->references('uuid')->on('vehicle_devices');
             $table->json('payload')->nullable();

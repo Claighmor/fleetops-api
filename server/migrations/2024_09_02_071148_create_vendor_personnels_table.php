@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('vendor_personnels', function (Blueprint $table) {
             $table->increments('id');
-            $table->uuid('uuid')->nullable()->index();
+            $table->uuid('uuid')->nullable()->index()->unique();
             $table->foreignUuid('vendor_uuid')->nullable()->references('uuid')->on('vendors')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->foreignUuid('contact_uuid')->nullable()->references('uuid')->on('contacts')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->timestamps();

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    public $withinTransaction = false;
     public function up(): void
     {
         /**
@@ -31,12 +32,16 @@ return new class extends Migration {
         });
 
         // Backfill existing rows so NOT NULL will succeed
-        DB::statement('UPDATE devices SET last_position = ST_SRID(POINT(0, 0), 4326) WHERE last_position IS NULL');
+        DB::statement(DB::connection()->getDriverName() === 'pgsql'
+            ? 'UPDATE devices SET last_position = ST_SetSRID(ST_MakePoint(0, 0), 4326) WHERE last_position IS NULL'
+            : 'UPDATE devices SET last_position = ST_SRID(POINT(0, 0), 4326) WHERE last_position IS NULL');
 
         // Make column NOT NULL (and optionally enforce SRID at column level)
         // If you want to enforce SRID on the column itself, uncomment the SRID variant:
         // DB::statement('ALTER TABLE devices MODIFY last_position POINT NOT NULL SRID 4326');
-        DB::statement('ALTER TABLE devices MODIFY last_position POINT NOT NULL');
+        DB::statement(DB::connection()->getDriverName() === 'pgsql'
+            ? 'ALTER TABLE devices ALTER COLUMN last_position SET NOT NULL'
+            : 'ALTER TABLE devices MODIFY last_position POINT NOT NULL');
 
         // NOW add the spatial index (requires NOT NULL)
         Schema::table('devices', function (Blueprint $table) {
@@ -62,8 +67,12 @@ return new class extends Migration {
             $table->point('last_position')->nullable()->after('serial_number');
         });
 
-        DB::statement('UPDATE sensors SET last_position = ST_SRID(POINT(0, 0), 4326) WHERE last_position IS NULL');
-        DB::statement('ALTER TABLE sensors MODIFY last_position POINT NOT NULL');
+        DB::statement(DB::connection()->getDriverName() === 'pgsql'
+            ? 'UPDATE sensors SET last_position = ST_SetSRID(ST_MakePoint(0, 0), 4326) WHERE last_position IS NULL'
+            : 'UPDATE sensors SET last_position = ST_SRID(POINT(0, 0), 4326) WHERE last_position IS NULL');
+        DB::statement(DB::connection()->getDriverName() === 'pgsql'
+            ? 'ALTER TABLE sensors ALTER COLUMN last_position SET NOT NULL'
+            : 'ALTER TABLE sensors MODIFY last_position POINT NOT NULL');
 
         Schema::table('sensors', function (Blueprint $table) {
             $table->spatialIndex('last_position', 'sensors_last_position_spx');

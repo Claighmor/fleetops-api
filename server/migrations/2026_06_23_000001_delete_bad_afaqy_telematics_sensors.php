@@ -19,8 +19,11 @@ return new class extends Migration {
             })
             ->delete();
 
+        $providerExpr = DB::connection()->getDriverName() === 'pgsql'
+            ? "LOWER(meta->>'provider')"
+            : "LOWER(JSON_UNQUOTE(JSON_EXTRACT(meta, '$.provider')))";
         DB::table('sensors')
-            ->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(meta, '$.provider'))) = ?", ['afaqy'])
+            ->whereRaw("{$providerExpr} = ?", ['afaqy'])
             ->delete();
     }
 

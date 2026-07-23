@@ -31,6 +31,13 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE orders ALTER COLUMN orchestrator_priority DROP NOT NULL');
+            DB::statement('ALTER TABLE orders ALTER COLUMN orchestrator_priority SET DEFAULT 50');
+
+            return;
+        }
+
         DB::statement(
             'ALTER TABLE `orders` MODIFY COLUMN `orchestrator_priority` TINYINT UNSIGNED NULL DEFAULT 50'
         );

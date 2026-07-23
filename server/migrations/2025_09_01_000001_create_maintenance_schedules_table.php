@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('maintenance_schedules', function (Blueprint $table) {
             $table->increments('id');
-            $table->uuid('uuid')->index();
+            $table->uuid('uuid')->unique();
             $table->string('_key')->nullable()->index();
             $table->string('public_id', 191)->nullable()->unique()->index();
             $table->foreignUuid('company_uuid')->constrained('companies', 'uuid')->cascadeOnDelete();
