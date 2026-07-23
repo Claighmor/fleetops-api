@@ -23,11 +23,52 @@ class Point implements CastsAttributes
      */
     public function get($model, $key, $value, $attributes)
     {
+        if ($value === null) {
+            return $value;
+        }
+
+        // PostGIS returns geometry columns as EWKB hex (e.g. "0101000020E6100000…").
+        if (is_string($value) && ctype_xdigit($value) && strlen($value) >= 42) {
+            $point = static::pgEwkbToPoint($value);
+            if ($point !== null) {
+                return $point;
+            }
+        }
+
         if (static::isRawPoint($value)) {
             return Utils::rawPointToPoint($value);
         }
 
         return $value;
+    }
+
+    /**
+     * Parse a PostGIS EWKB hex string into a Point (X=lng, Y=lat, SRID 4326).
+     */
+    public static function pgEwkbToPoint(string $hex): ?\Fleetbase\LaravelMysqlSpatial\Types\Point
+    {
+        $bin = @hex2bin($hex);
+        if ($bin === false || strlen($bin) < 21) {
+            return null;
+        }
+
+        $littleEndian = ord($bin[0]) === 1;
+        $type         = unpack($littleEndian ? 'V' : 'N', substr($bin, 1, 4))[1];
+
+        // Only 2D Point (geometry type 1) is handled here.
+        if (($type & 0xFF) !== 1) {
+            return null;
+        }
+
+        $offset = 5;
+        if ($type & 0x20000000) {
+            $offset += 4; // skip the SRID word
+        }
+
+        $xy = unpack($littleEndian ? 'e2' : 'E2', substr($bin, $offset, 16));
+
+        // X is longitude, Y is latitude — reuse the proven constructor path.
+        return Utils::getPointFromCoordinates(['lng' => $xy[1], 'lat' => $xy[2]]);
     }
 
     /**
