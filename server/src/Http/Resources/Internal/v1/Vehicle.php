@@ -28,6 +28,13 @@ class Vehicle extends VehicleWithoutDriver
             'id'
         );
 
+        // Compliance documents, only when explicitly eager loaded so the
+        // vehicle index isn't dragged down by a join it doesn't need.
+        $vehicle['documents'] = $this->whenLoaded(
+            'documents',
+            fn () => \Fleetbase\FleetOps\Http\Resources\v1\Document::collection($this->documents)
+        );
+
         return $vehicle;
     }
 }

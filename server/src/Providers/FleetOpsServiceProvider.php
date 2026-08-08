@@ -68,6 +68,8 @@ class FleetOpsServiceProvider extends CoreServiceProvider
         \Fleetbase\FleetOps\Console\Commands\TestEmail::class,
         \Fleetbase\FleetOps\Console\Commands\ProcessMaintenanceTriggers::class,
         \Fleetbase\FleetOps\Console\Commands\SendMaintenanceReminders::class,
+        \Fleetbase\FleetOps\Console\Commands\SendDocumentReminders::class,
+        \Fleetbase\FleetOps\Console\Commands\InstallDocumentFields::class,
         \Fleetbase\FleetOps\Console\Commands\ProcessOperationalAlerts::class,
         \Fleetbase\FleetOps\Console\Commands\SyncTelematics::class,
     ];
@@ -141,6 +143,7 @@ class FleetOpsServiceProvider extends CoreServiceProvider
             $schedule->command('fleetops:purge-service-quotes')->daily()->withoutOverlapping();
             $schedule->command('fleetops:process-maintenance-triggers')->daily()->withoutOverlapping()->storeOutputInDb();
             $schedule->command('fleetops:send-maintenance-reminders')->daily()->withoutOverlapping()->storeOutputInDb();
+            $schedule->command('fleetops:send-document-reminders')->daily()->withoutOverlapping()->storeOutputInDb();
             $schedule->command('fleetops:process-operational-alerts')->everyMinute()->withoutOverlapping()->storeOutputInDb();
             $schedule->command('fleetops:sync-telematics')->everyMinute()->withoutOverlapping()->storeOutputInDb();
         });

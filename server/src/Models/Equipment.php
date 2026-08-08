@@ -17,6 +17,7 @@ use Fleetbase\Traits\Searchable;
 use Fleetbase\Traits\TracksApiCredential;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Spatie\Activitylog\LogOptions;
@@ -198,6 +199,15 @@ class Equipment extends Model
     public function photo(): BelongsTo
     {
         return $this->belongsTo(File::class, 'photo_uuid', 'uuid');
+    }
+
+    /**
+     * Compliance documents — insurance, registration, inspections — newest
+     * first. Renewals stack as separate rows, so this is the full history.
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'subject', 'subject_type', 'subject_uuid')->latest();
     }
 
     public function createdBy(): BelongsTo

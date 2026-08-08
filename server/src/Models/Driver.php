@@ -350,6 +350,15 @@ class Driver extends Model
     }
 
     /**
+     * Compliance documents — license, medical certificate, permits — newest
+     * first. Renewals stack as separate rows, so this is the full history.
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'subject', 'subject_type', 'subject_uuid')->latest();
+    }
+
+    /**
      * Get all schedules assigned to this driver.
      * The driver acts as the polymorphic `subject` on the Schedule model.
      */

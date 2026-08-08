@@ -211,4 +211,18 @@ return [
     */
     'versions' => ['2020-09-30', '2024-03-12'],
     'version'  => '2024-03-12',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compliance Document Reminders
+    |--------------------------------------------------------------------------
+    |
+    | Days before a document's expiry that `fleetops:send-document-reminders`
+    | emails about it. A document can override these per record by setting
+    | `meta.reminder_offsets`.
+    |
+    */
+    'document_reminders' => [
+        'offsets' => [30, 14, 7],
+    ],
 ];

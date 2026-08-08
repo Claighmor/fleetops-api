@@ -125,6 +125,14 @@ Route::prefix(config('fleetops.api.routing.prefix'))->namespace('Fleetbase\Fleet
                 $router->put('{id}', 'EquipmentController@update');
                 $router->delete('{id}', 'EquipmentController@delete');
             });
+            // document routes
+            $router->group(['prefix' => 'documents'], function () use ($router) {
+                $router->post('/', 'DocumentController@create');
+                $router->get('/', 'DocumentController@query');
+                $router->get('{id}', 'DocumentController@find');
+                $router->put('{id}', 'DocumentController@update');
+                $router->delete('{id}', 'DocumentController@delete');
+            });
             // parts routes
             $router->group(['prefix' => 'parts'], function () use ($router) {
                 $router->post('/', 'PartController@create');
@@ -596,6 +604,9 @@ Route::prefix(config('fleetops.api.routing.prefix'))->namespace('Fleetbase\Fleet
                             $router->post('import', $controller('import'));
                         });
                         $router->fleetbaseRoutes('warranties');
+                        $router->fleetbaseRoutes('documents', function ($router, $controller) {
+                            $router->get('expiring', $controller('expiring'));
+                        });
                         $router->group(
                             ['prefix' => 'query'],
                             function () use ($router) {

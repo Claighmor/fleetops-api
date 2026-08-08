@@ -391,6 +391,15 @@ class Vehicle extends Model
     }
 
     /**
+     * Compliance documents — insurance, registration, title — newest first.
+     * Renewals stack as separate rows, so this is the full history.
+     */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'subject', 'subject_type', 'subject_uuid')->latest();
+    }
+
+    /**
      * Get avatar URL attribute.
      *
      * @return string
